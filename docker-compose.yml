@@ -2,11 +2,13 @@ version: '2'
 services:
   mongodb:
     image: mongo
+    restart: always
   bot:
     build: .
     links:
       - mongodb
     dns: 8.8.8.8
+    restart: always
     env_file: tokens.env
     ports:
       - "8800:80"
