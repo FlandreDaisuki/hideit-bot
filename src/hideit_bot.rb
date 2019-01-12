@@ -7,7 +7,7 @@ module Hideit_bot
 
     class HideItBot
         RegExpParcial = /(^|[^\\])\*(([^\*]|\\\*)*([^\*\\]|\\\*))\*/
-        Welcome_message = "Hello world!"
+        Welcome_message = "Hello 你也是正太控嗎？"
 
         def self.start()
             Mongo::Logger.logger.level = ::Logger::FATAL
@@ -61,7 +61,7 @@ module Hideit_bot
                     begin
                         res = @messages.find("_id" => BSON::ObjectId(message.data)).to_a[0][:text]
                     rescue
-                        res = "Message not found in database. Sorry!"
+                        res = "錯誤 :p\n找不到訊息。"
                     end
                     @bot.api.answer_callback_query(
                         callback_query_id: message.id,
@@ -92,15 +92,15 @@ module Hideit_bot
                           @bot.track('message', message.from.id, message_type: 'toolong')
                         end
                     elsif message.text == "/start"
-                        @bot.api.send_message(chat_id: message.chat.id, text: "Hello, #{message.from.first_name}!\nThis bot should be used inline.\nType @hideItBot to start")
-                        @bot.api.send_message(chat_id: message.chat.id, text: "You can use it to send a spoiler in a group conversation.\nOr to send a message that won't be readable in notifications!\nYou can hide only *parts of the message* enclosing them in asterisks.\nExample:\n")
+                        @bot.api.send_message(chat_id: message.chat.id, text: "Hello, #{message.from.first_name}!\n要使用這個 bot 請在聊天輸入處輸入\n @heidex_bot ")
+                        @bot.api.send_message(chat_id: message.chat.id, text: "你也可以在群內使用本bot，而且可以只遮掩部分內容 *像這樣* 需要被遮掩的地方使用星號包覆。")
                         @bot.api.send_message(
                           chat_id: message.chat.id,
                           text: message_to_blocks(Welcome_message),
                           reply_markup: Telegram::Bot::Types::InlineKeyboardMarkup.new(
                               inline_keyboard: [
                                   Telegram::Bot::Types::InlineKeyboardButton.new(
-                                      text: 'Read',
+                                      text: '顯示內容',
                                       callback_data: @rootMessageId
                                   )
                               ]
@@ -147,27 +147,27 @@ module Hideit_bot
             if message.query == ""
                 results = []
                 default_params = {
-                    switch_pm_text: 'How to use this bot',
+                    switch_pm_text: 'J個Bot怎麼用？',
                     switch_pm_parameter: 'howto'
                 }
             elsif message.query.length > 200
                 results = []
                 default_params = {
-                    switch_pm_text: 'Sorry, this message is too long, split it to send.',
+                    switch_pm_text: '錯誤：文字訊息過長，請嘗試將文字拆解後分次使用。',
                     switch_pm_parameter: 'toolong'
                 }
             else
 
               id = save_message(message.from.id, message.query)
               results = [
-                [id, 'cover:'+id, 'Send covered text', message_to_blocks(message.query), message_to_blocks(message.query)],
-                [id, 'generic:'+id, 'Send generic message', '❓❓❓','❓❓❓']
+                [id, 'cover:'+id, '傳送普通遮塊', message_to_blocks(message.query), message_to_blocks(message.query)],
+                [id, 'generic:'+id, '🌚🌚🌚', '🌚🌚🌚','🌚🌚🌚']
               ]
 
               if message.query.index(RegExpParcial)
                 id_covered = save_message(message.from.id, message_clear_parcial(message.query))
                 results.insert(1,
-                  [id_covered, 'partial:'+id_covered, 'Send partially covered text', message_to_blocks_parcial(message.query), message_to_blocks_parcial(message.query)],
+                  [id_covered, 'partial:'+id_covered, '傳送遮掩部分文字', message_to_blocks_parcial(message.query), message_to_blocks_parcial(message.query)],
                 )
               end
 
@@ -180,7 +180,7 @@ module Hideit_bot
                       reply_markup: Telegram::Bot::Types::InlineKeyboardMarkup.new(
                           inline_keyboard: [
                               Telegram::Bot::Types::InlineKeyboardButton.new(
-                                  text: 'Read',
+                                  text: '顯示訊息',
                                   callback_data: arr[0]
                               )
                           ]
